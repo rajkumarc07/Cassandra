@@ -1,0 +1,228 @@
+Microsoft Windows [Version 10.0.22621.1105]
+(c) Microsoft Corporation. All rights reserved.
+
+C:\Users\Rajkumar>cd c:\
+
+c:\>cqlsh
+
+WARNING: console codepage must be set to cp65001 to support utf-8 encoding on Windows platforms.
+If you experience encoding problems, change your console codepage with 'chcp 65001' before starting cqlsh.
+
+Connected to Test Cluster at 127.0.0.1:9042.
+[cqlsh 5.0.1 | Cassandra 3.11.14 | CQL spec 3.4.4 | Native protocol v4]
+Use HELP for help.
+WARNING: pyreadline dependency missing.  Install to enable tab completion.
+cqlsh> CREATE KEYSPACES;
+SyntaxException: line 1:7 no viable alternative at input 'KEYSPACES' ([CREATE] KEYSPACES...)
+cqlsh> describe keyspaces
+
+system_schema  system        system_distributed
+system_auth    sampledemodb  system_traces
+
+cqlsh> use system_schema;
+cqlsh:system_schema> CREATE TABLE emp(
+                 ...    emp_id int PRIMARY KEY,
+                 ...    emp_name text,
+                 ...    emp_city text,
+                 ...    emp_sal varint,
+                 ...    emp_phone varint
+                 ...    );
+Unauthorized: Error from server: code=2100 [Unauthorized] message="system_schema keyspace is not user-modifiable."
+cqlsh:system_schema> CREATE KEYSPACE tutorialspoint
+                 ... WITH replication = {'class':'SimpleStrategy', 'replication_factor' : 3};
+
+Warnings :
+Your replication factor 3 for keyspace tutorialspoint is higher than the number of nodes 1
+
+cqlsh:system_schema> DESCRIBE keyspaces;
+
+tutorialspoint  system_auth  sampledemodb        system_traces
+system_schema   system       system_distributed
+
+cqlsh:system_schema> CREATE KEYSPACE test
+                 ... ... WITH REPLICATION = { 'class' : 'NetworkTopologyStrategy', 'datacenter1' : 3 }
+                 ... ... AND DURABLE_WRITES = false;
+SyntaxException: line 2:0 mismatched input '.' expecting K_WITH (CREATE KEYSPACE test[.]...)
+cqlsh:system_schema> SELECT * FROM system_schema.keyspaces;
+
+ keyspace_name      | durable_writes | replication
+--------------------+----------------+-------------------------------------------------------------------------------------
+        system_auth |           True | {'class': 'org.apache.cassandra.locator.SimpleStrategy', 'replication_factor': '1'}
+      system_schema |           True |                             {'class': 'org.apache.cassandra.locator.LocalStrategy'}
+     tutorialspoint |           True | {'class': 'org.apache.cassandra.locator.SimpleStrategy', 'replication_factor': '3'}
+ system_distributed |           True | {'class': 'org.apache.cassandra.locator.SimpleStrategy', 'replication_factor': '3'}
+             system |           True |                             {'class': 'org.apache.cassandra.locator.LocalStrategy'}
+      system_traces |           True | {'class': 'org.apache.cassandra.locator.SimpleStrategy', 'replication_factor': '2'}
+       sampledemodb |           True | {'class': 'org.apache.cassandra.locator.SimpleStrategy', 'replication_factor': '3'}
+
+(7 rows)
+cqlsh:system_schema> USE tutorialspoint;
+cqlsh:tutorialspoint> CREATE TABLE emp(
+                  ...    emp_id int PRIMARY KEY,
+                  ...    emp_name text,
+                  ...    emp_city text,
+                  ...    emp_sal varint,
+                  ...    emp_phone varint
+                  ...    );
+cqlsh:tutorialspoint> select * from emp;
+
+ emp_id | emp_city | emp_name | emp_phone | emp_sal
+--------+----------+----------+-----------+---------
+
+(0 rows)
+cqlsh:tutorialspoint> insert into emp(emp_id,emp_name,emp_city,
+                  ... emp_phone, emp_sal)values(2,'rajkumar','sivakasi',09655737100,99999);
+cqlsh:tutorialspoint> select * from emp;
+
+ emp_id | emp_city | emp_name | emp_phone  | emp_sal
+--------+----------+----------+------------+---------
+      2 | sivakasi | rajkumar | 9655737100 |   99999
+
+(1 rows)
+cqlsh:tutorialspoint> insert into emp(emp_id,emp_name,emp_city,
+                  ... emp_phone, emp_sal)values(1,'rajkumar','sivakasi',09655737100,99999);
+cqlsh:tutorialspoint> insert into emp(emp_id,emp_name,emp_city,
+                  ... emp_phone, emp_sal)values(2,'steve','chennai',09655737100,123456);
+cqlsh:tutorialspoint> select * from emp;
+
+ emp_id | emp_city | emp_name | emp_phone  | emp_sal
+--------+----------+----------+------------+---------
+      1 | sivakasi | rajkumar | 9655737100 |   99999
+      2 |  chennai |    steve | 9655737100 |  123456
+
+(2 rows)
+cqlsh:tutorialspoint> truncate dept;
+InvalidRequest: Error from server: code=2200 [Invalid query] message="unconfigured table dept"
+cqlsh:tutorialspoint> truncate emp;
+cqlsh:tutorialspoint> select * from emp;
+
+ emp_id | emp_city | emp_name | emp_phone | emp_sal
+--------+----------+----------+-----------+---------
+
+(0 rows)
+cqlsh:tutorialspoint> describe emp;
+
+CREATE TABLE tutorialspoint.emp (
+    emp_id int PRIMARY KEY,
+    emp_city text,
+    emp_name text,
+    emp_phone varint,
+    emp_sal varint
+) WITH bloom_filter_fp_chance = 0.01
+    AND caching = {'keys': 'ALL', 'rows_per_partition': 'NONE'}
+    AND comment = ''
+    AND compaction = {'class': 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy', 'max_threshold': '32', 'min_threshold': '4'}
+    AND compression = {'chunk_length_in_kb': '64', 'class': 'org.apache.cassandra.io.compress.LZ4Compressor'}
+    AND crc_check_chance = 1.0
+    AND dclocal_read_repair_chance = 0.1
+    AND default_time_to_live = 0
+    AND gc_grace_seconds = 864000
+    AND max_index_interval = 2048
+    AND memtable_flush_period_in_ms = 0
+    AND min_index_interval = 128
+    AND read_repair_chance = 0.0
+    AND speculative_retry = '99PERCENTILE';
+
+cqlsh:tutorialspoint> CREATE TABLE data(name text PRIMARY KEY, email list<text>);
+cqlsh:tutorialspoint> describe data;
+
+CREATE TABLE tutorialspoint.data (
+    name text PRIMARY KEY,
+    email list<text>
+) WITH bloom_filter_fp_chance = 0.01
+    AND caching = {'keys': 'ALL', 'rows_per_partition': 'NONE'}
+    AND comment = ''
+    AND compaction = {'class': 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy', 'max_threshold': '32', 'min_threshold': '4'}
+    AND compression = {'chunk_length_in_kb': '64', 'class': 'org.apache.cassandra.io.compress.LZ4Compressor'}
+    AND crc_check_chance = 1.0
+    AND dclocal_read_repair_chance = 0.1
+    AND default_time_to_live = 0
+    AND gc_grace_seconds = 864000
+    AND max_index_interval = 2048
+    AND memtable_flush_period_in_ms = 0
+    AND min_index_interval = 128
+    AND read_repair_chance = 0.0
+    AND speculative_retry = '99PERCENTILE';
+
+cqlsh:tutorialspoint> INSERT INTO data(name, email) VALUES ('RAJKUMAR',['abc@gmail.com','xyz@gmail.com']);
+cqlsh:tutorialspoint> select * from data;
+
+ name     | email
+----------+------------------------------------
+ RAJKUMAR | ['abc@gmail.com', 'xyz@gmail.com']
+
+(1 rows)
+cqlsh:tutorialspoint> INSERT INTO data(name, email) VALUES ('2 lakhs',['stuv@gmail.com','mnop@gmail.com']);
+cqlsh:tutorialspoint> select * from data;
+
+ name     | email
+----------+--------------------------------------
+  2 lakhs | ['stuv@gmail.com', 'mnop@gmail.com']
+ RAJKUMAR |   ['abc@gmail.com', 'xyz@gmail.com']
+
+(2 rows)
+cqlsh:tutorialspoint> INSERT INTO data(salary, email,) VALUES ('2 lakhs',['stuv@gmail.com','mnop@gmail.com']);
+SyntaxException: line 1:31 no viable alternative at input ')' (... INTO data(salary, email,[)]...)
+cqlsh:tutorialspoint> INSERT INTO data(name, email) VALUES ('STEVE',['stuv@gmail.com','mnop@gmail.com']);
+cqlsh:tutorialspoint> select * from data;
+
+ name     | email
+----------+--------------------------------------
+  2 lakhs | ['stuv@gmail.com', 'mnop@gmail.com']
+ RAJKUMAR |   ['abc@gmail.com', 'xyz@gmail.com']
+    STEVE | ['stuv@gmail.com', 'mnop@gmail.com']
+
+(3 rows)
+cqlsh:tutorialspoint> INSERT INTO data(name, email) VALUES ('RAJKUMAR',['abc@gmail.com','xyz@gmail.com'])
+                  ... INSERT INTO data(name, email) VALUES ('2 lakhs',['stuv@gmail.com','mnop@gmail.com'])
+                  ... INSERT INTO data(name, email) VALUES ('STEVE',['stuv@gmail.com','mnop@gmail.com'])
+                  ... INSERT INTO data(name, email) VALUES ('3 lakhs',['stuv@gmail.com','mnop@gmail.com']);
+SyntaxException: line 2:0 mismatched input 'INSERT' expecting EOF (...('RAJKUMAR',['abc@gmail.com','xyz@gmail.com'])[INSERT]...)
+cqlsh:tutorialspoint> select * from data;
+
+ name     | email
+----------+--------------------------------------
+  2 lakhs | ['stuv@gmail.com', 'mnop@gmail.com']
+ RAJKUMAR |   ['abc@gmail.com', 'xyz@gmail.com']
+    STEVE | ['stuv@gmail.com', 'mnop@gmail.com']
+
+(3 rows)
+cqlsh:tutorialspoint> create table blogs (blogID int,
+                  ... time 1 int,
+                  ... time 2 int,
+                  ... author text,
+                  ... content text,
+                  ... PRIMARY KEY(blogID, time 1, time 2));
+SyntaxException: line 2:5 no viable alternative at input '1' (...blogs (blogID int,time [1]...)
+cqlsh:tutorialspoint> CREATE TABLE blogs (blogID int,
+                  ... time1 int,
+                  ... time2 int,
+                  ... author text,
+                  ... content text,
+                  ... PRIMARY KEY(blogID, time1, time2));
+cqlsh:tutorialspoint> select * from blogs;
+
+ blogid | time1 | time2 | author | content
+--------+-------+-------+--------+---------
+
+(0 rows)
+cqlsh:tutorialspoint> select * from blogs WHERE blogID =1 and time =141 and tome=122;
+InvalidRequest: Error from server: code=2200 [Invalid query] message="Undefined column name time"
+cqlsh:tutorialspoint> select * from blogs WHERE blogID =1 and time =141 and time=122;
+InvalidRequest: Error from server: code=2200 [Invalid query] message="Undefined column name time"
+cqlsh:tutorialspoint> select * from blogs where blogID =1 and time1 =141 and time2 =122;
+
+ blogid | time1 | time2 | author | content
+--------+-------+-------+--------+---------
+
+(0 rows)
+cqlsh:tutorialspoint> select * from blogs where time1 = 141 allow filtering
+                  ... select * from blogs where time1 = 141 allow filtering;
+SyntaxException: line 2:0 mismatched input 'select' expecting EOF (...time1 = 141 allow filtering[select]...)
+cqlsh:tutorialspoint> select * from blogs where time1 = 141 allow filtering;
+
+ blogid | time1 | time2 | author | content
+--------+-------+-------+--------+---------
+
+(0 rows)
+cqlsh:tutorialspoint>
